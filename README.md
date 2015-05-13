@@ -1,3 +1,3 @@
 # TMJ
 The Golden Peafowl
-For the golden age ahead
+For the golden age ahead...
