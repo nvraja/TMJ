@@ -100,3 +100,27 @@ data.frame(table(newdf$StoreCode))
 
 # Coercing StoreCode to factor class:
 newdf$StoreCode <- as.factor(newdf$StoreCode)
+
+# Time Series:
+# Also loads "forecast" and "zoo"
+library(fpp) 
+# newdfts <- ts(newdf)
+
+# Gold:
+GData.MDU <- newdf[newdf$itm_MType_vc=="GOLD" & newdf$StoreCode=="MDU", ]
+GData.MDU.Complete <- GData.MDU[complete.cases(GData.MDU),]
+
+# Gold weight: day/date wise
+GData.MDU.dateQuantity <- aggregate(quantity ~ Date, data=GData.MDU.Complete, FUN=sum, na.rm=TRUE)
+GData.MDU.dateQuantity$Year <- format(GData.MDU.dateQuantity$Date, "%Y")
+
+# To check the number of days in each year for which data is available:
+table(GData.MDU.dateQuantity$Year)
+
+# ggplot library for plotting:
+require(ggplot2)
+
+# Plot quatity of gold sold per day:
+ggplot(GData.MDU.dateQuantity[GData.MDU.dateQuantity$Year=="2009",], aes(Date, quantity)) + geom_line()
+
+
