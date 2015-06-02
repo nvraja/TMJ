@@ -120,7 +120,7 @@ table(GData.MDU.dateQuantity$Year)
 # ggplot library for plotting:
 require(ggplot2)
 
-# Plot quatity of gold sold per day:
+# Plot quantity of gold sold per day:
 ggplot(GData.MDU.dateQuantity[GData.MDU.dateQuantity$Year=="2009",], aes(Date, quantity)) + geom_line()
 
 
