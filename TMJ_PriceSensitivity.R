@@ -134,6 +134,11 @@ unitPriceGold <- unitPrice[unitPrice$MType=="GOLD", ]
 # Filtering out FY15
 unitPriceGold <- unitPriceGold[unitPriceGold$Date<"2015-04-01", ]
 
+# Plotting the gold unit price:
+library(ggplot2)
+unitPriceGold$BoardRate <- as.numeric(unitPriceGold$BoardRate)
+ggplot(unitPriceGold[unitPriceGold$Date>"2009-01-01" & unitPriceGold$Date<"2015-01-01",], aes(Date, BoardRate)) + geom_line()
+
 # Unit price for all days:
 # Dummy table with all the dates:
 seqDatePrice <- list(Date=seq(as.Date("2009-11-21"), as.Date("2015-03-31"), by=1))
@@ -177,9 +182,23 @@ DailySalesUnitPrice <- merge(GData.MDU.Complete.Date, goldUnitPrice, by="Date")
 
 str(DailySalesUnitPrice)
 
-# Previous day unit price:
+# Outlier Unit price: Dates
+outlierUnitPriceDates <- c("2009-12-11", "2009-12-31", "2011-01-28", "2011-08-28", "2011-11-22", "2011-12-21", "2011-12-22", "2012-05-16", "2012-05-19", "2013-05-04")
+
+
+DailySalesUnitPrice$Date <- as.character(DailySalesUnitPrice$Date)
+DailySalesUnitPrice <- DailySalesUnitPrice[!(DailySalesUnitPrice$Date %in% outlierUnitPriceDates), ]
+DailySalesUnitPrice$Date <- as.Date(DailySalesUnitPrice$Date)
+
+# Previous day unit price: (Outlier unit price dates removed after this exporation)
+# DailySalesUnitPrice[DailySalesUnitPrice$Date>"2011-08-01" & DailySalesUnitPrice$Date<"2011-10-01",]
+#"2011-08-25", 2011-09-24, 
+
 DailySalesUnitPrice$goldUnitPricePreviousDay <- lag(DailySalesUnitPrice$goldUnitPrice)
 str(DailySalesUnitPrice)
+
+#DailySalesUnitPrice$Difference <- (DailySalesUnitPrice$goldUnitPricePreviousDay - DailySalesUnitPrice$goldUnitPrice)
+#DailySalesUnitPrice[abs(DailySalesUnitPrice$Difference)>100,]
 
 # ======================================================
 ## Including variables
@@ -223,34 +242,164 @@ DailySalesUnitPriceIncreaseDecrease$priceChange14D <- c(rep(0,14), diff(DailySal
 DailySalesUnitPriceIncreaseDecrease$priceChange30D <- c(rep(0,30), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 30))
 
 # ======================================================
+## Identifying sales outliers:
+
+# Plots
+library(ggplot2)
+ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2009-01-01" & GData.MDU.Complete.Date$Date<"2010-01-01",], aes(Date, quantitySum)) + geom_line()
+ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2010-01-01" & GData.MDU.Complete.Date$Date<"2011-01-01",], aes(Date, quantitySum)) + geom_line()
+ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2011-01-01" & GData.MDU.Complete.Date$Date<"2012-01-01",], aes(Date, quantitySum)) + geom_line()
+ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2012-01-01" & GData.MDU.Complete.Date$Date<"2013-01-01",], aes(Date, quantitySum)) + geom_line()
+ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2013-01-01" & GData.MDU.Complete.Date$Date<"2014-01-01",], aes(Date, quantitySum)) + geom_line()
+ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2014-01-01" & GData.MDU.Complete.Date$Date<"2015-01-01",], aes(Date, quantitySum)) + geom_line()
+
+
+GData.MDU.Complete.Date <- as.data.frame(GData.MDU.Complete.Date)
+
+# To get the dates where sales is an outlier: (cutoff based on the earlier plot)
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2009-01-01" & GData.MDU.Complete.Date$Date<"2010-01-01" & GData.MDU.Complete.Date$quantitySum>8000, ]
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2010-01-01" & GData.MDU.Complete.Date$Date<"2011-01-01" & GData.MDU.Complete.Date$quantitySum>6000, ]
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2011-01-01" & GData.MDU.Complete.Date$Date<"2012-01-01" & GData.MDU.Complete.Date$quantitySum>8000, ]
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2012-01-01" & GData.MDU.Complete.Date$Date<"2013-01-01" & GData.MDU.Complete.Date$quantitySum>6000, ]
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2013-01-01" & GData.MDU.Complete.Date$Date<"2014-01-01" & GData.MDU.Complete.Date$quantitySum>5000, ]
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2014-01-01" & GData.MDU.Complete.Date$Date<"2015-01-01" & GData.MDU.Complete.Date$quantitySum>5000, ]
+
+# Distribution of quantity sold per day:
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2009-01-01" & GData.MDU.Complete.Date$Date<"2010-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2010-01-01" & GData.MDU.Complete.Date$Date<"2011-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2011-01-01" & GData.MDU.Complete.Date$Date<"2012-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2012-01-01" & GData.MDU.Complete.Date$Date<"2013-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2013-01-01" & GData.MDU.Complete.Date$Date<"2014-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2014-01-01" & GData.MDU.Complete.Date$Date<"2015-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
+
+
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$quantitySum>6000, ]
+
+# Outlier Sales: Dates
+outlierSalesDates <- c("2009-04-27", "2009-08-03", "2010-05-16", "2010-07-31", "2010-08-01", "2010-08-03", "2011-05-06", "2011-08-03", "2012-04-24", "2012-08-02", "2013-04-17", "2013-04-19", "2013-04-20", "2013-04-21", "2013-04-22", "2013-05-13", "2013-08-03", "2014-05-02", "2014-08-03")
+
+DailySalesUnitPriceIncreaseDecrease$Date <- as.character(DailySalesUnitPriceIncreaseDecrease$Date)
+
+DailySalesUnitPriceIncreaseDecreaseLessOutlier <- DailySalesUnitPriceIncreaseDecrease[!(DailySalesUnitPriceIncreaseDecrease$Date %in% outlierSalesDates), ]
+
+DailySalesUnitPriceIncreaseDecreaseLessOutlier$Date <- as.Date(DailySalesUnitPriceIncreaseDecreaseLessOutlier$Date)
+
+dataFinalizing <- DailySalesUnitPriceIncreaseDecreaseLessOutlier[,]
+ggplot(dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2011-01-01",], aes(Date, quantitySum)) + geom_line()
+# ======================================================
 # previous days sales:
-DailySalesUnitPriceIncreaseDecrease$PreviousDaySales <- lag(DailySalesUnitPriceIncreaseDecrease$quantitySum)
-DailySalesUnitPriceIncreaseDecrease$PreviousDaySales[1] <- 0
+dataFinalizing$PreviousDaySales <- lag(dataFinalizing$quantitySum)
+dataFinalizing$PreviousDaySales[1] <- 0
 
 # To obtain moving/rolling average from rollmean function in "zoo" package :
 library(zoo)
 #Average Sales in the last:
 # 7 days:
-DailySalesUnitPriceIncreaseDecrease$AvgSalesPast7 <- c(rep(NA, 6), rollmean(DailySalesUnitPriceIncreaseDecrease$PreviousDaySales,7, align="right"))
+dataFinalizing$AvgSalesPast7 <- c(rep(NA, 6), rollmean(dataFinalizing$PreviousDaySales,7, align="right"))
 # 14 days:
-DailySalesUnitPriceIncreaseDecrease$AvgSalesPast14 <- c(rep(NA, 13), rollmean(DailySalesUnitPriceIncreaseDecrease$PreviousDaySales,14, align="right"))
+dataFinalizing$AvgSalesPast14 <- c(rep(NA, 13), rollmean(dataFinalizing$PreviousDaySales,14, align="right"))
 # 30 days:
-DailySalesUnitPriceIncreaseDecrease$AvgSalesPast30 <- c(rep(NA, 29), rollmean(DailySalesUnitPriceIncreaseDecrease$PreviousDaySales,30, align="right"))
+dataFinalizing$AvgSalesPast30 <- c(rep(NA, 29), rollmean(dataFinalizing$PreviousDaySales,30, align="right"))
 
-str(DailySalesUnitPriceIncreaseDecrease)
-head(DailySalesUnitPriceIncreaseDecrease,40)
-# ======================================================
-# Copy of the dataset
-dailySales <- DailySalesUnitPriceIncreaseDecrease[,]
+str(dataFinalizing)
+head(dataFinalizing,40)
 
 # ======================================================
 ## Calendar variables:
 # Day of the week:
-dailySales$weekday <- weekdays(dailySales$Date)
+dataFinalizing$weekday <- weekdays(dataFinalizing$Date)
 # Month of the year:
-dailySales$month <- months(dailySales$Date)
+dataFinalizing$month <- months(dataFinalizing$Date)
 # Week of the year:
-dailySales$weekNumber <- strftime(as.POSIXlt(dailySales$Date), format="%W")
+dataFinalizing$weekNumber <- strftime(as.POSIXlt(dataFinalizing$Date), format="%W")
 
+str(dataFinalizing)
+head(dataFinalizing,40)
 
+# ======================================================
+## A few more exploratory plots:
+ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"2015-01-01",], aes(Date, priceChange1D)) + geom_line()
+ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"2015-01-01",], aes(Date, priceChange7D)) + geom_line()
+ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"2015-01-01",], aes(Date, priceChange14D)) + geom_line()
+ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"2015-01-01",], aes(Date, priceChange30D)) + geom_line()
+
+ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"2015-01-01",], aes(Date, goldUnitPrice)) + geom_line()
+
+# ======================================================
+# Copy of data for modelling:
+dataTestTrain <- dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2014-04-01",]
+names(dataTestTrain)
+
+# This is because 53 factors are the max that could be easily handled
+dataTestTrain <- dataTestTrain[dataTestTrain$weekNumber!="53",]
+
+# Converting "character" class to "factor" class
+i <- sapply(dataTestTrain, is.character)
+dataTestTrain[i] <- lapply(dataTestTrain[i], as.factor) 
+
+# ======================================================
+# ======================================================
+# Modelling the data:
+# Sampling to training and test sets:
+#install.packages("caTools")
+library(caTools)
+set.seed(1729)
+split = sample.split(dataTestTrain$quantitySum, SplitRatio = 0.8)
+
+dataTrain = subset(dataTestTrain, split==TRUE)
+dataTest = subset(dataTestTrain, split==FALSE)
+
+# ======================================================
+# The random forest model
+#install.packages("randomForest")
+library(randomForest)
+RF1 <- randomForest(quantitySum ~ .-Date, data=dataTrain, ntree=2000, nodesize=25, do.trace=FALSE)
+
+predictRF1  <- predict(RF1, data=dataTest)
+
+TrainPredicted <- cbind(dataTest, predictRF1)
+
+# R-square for Random Forest
+RfTrainSSE = sum((dataTrain$quantitySum - dataTrain$predictRF1)^2)
+RfTrainSST = sum((TrainPredicted$quantitySum - mean(TrainPredicted$quantitySum))^2)
+R-Square <- (1 - RfTrainSSE/RfTrainSST)
+
+# Tuning Random Forest and with cross validation - Generally this is computationally intensive
+# Seeding
+set.seed(2)
+# install.packages("caret")
+# install.packages("e1071")
+library(caret)
+library(e1071)
+
+# ======================================================
+# Gradient Boosting:
+library(gbm)
+gbm1 <- gbm(quantitySum ~ .-Date, data=dataTrain,
+		distribution="gaussian", 
+		n.trees = 1000, 
+		interaction.depth = 1,
+		bag.fraction = 0.5,
+		shrinkage = 0.01,
+		n.cores = 4	
+		)
+
+summary(gbm1)
+bestGBMperf1 <- gbm.perf(gbm1, method="OOB")
+
+# Partial Dependence plot:
+plot.gbm(gbm1 , i.var=1, bestGBMperf1)
+plot.gbm(gbm1 , i.var=2, bestGBMperf1)
+plot.gbm(gbm1 , i.var=3, bestGBMperf1)
+plot.gbm(gbm1 , i.var=4, bestGBMperf1)
+plot.gbm(gbm1 , i.var=5, bestGBMperf1)
+plot.gbm(gbm1 , i.var=6, bestGBMperf1)
+plot.gbm(gbm1 , i.var=7, bestGBMperf1)
+plot.gbm(gbm1 , i.var=8, bestGBMperf1)
+plot.gbm(gbm1 , i.var=9, bestGBMperf1)
+plot.gbm(gbm1 , i.var=10, bestGBMperf1)
+
+predictTest1 <- predict(gbm1, dataTest, n.trees = bestGBMperf1)
+
+summary(predictTest1)
 
