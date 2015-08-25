@@ -355,22 +355,72 @@ dataTest = subset(dataTestTrain, split==FALSE)
 library(randomForest)
 RF1 <- randomForest(quantitySum ~ .-Date, data=dataTrain, ntree=2000, nodesize=25, do.trace=FALSE)
 
-predictRF1  <- predict(RF1, data=dataTest)
+predictTrainRF1  <- predict(RF1, data=dataTrain)
+predictTestRF1  <- predict(RF1, newdata=dataTest)
 
-TrainPredicted <- cbind(dataTest, predictRF1)
+TrainPredictedRF1 <- cbind(dataTrain, predictTrainRF1)
+TestPredictedRF1 <- cbind(dataTest, predictTestRF1)
+
+head(TrainPredictedRF1[,c("Date", "quantitySum", "predictTrainRF1")],20)
+head(TestPredictedRF1[,c("Date", "quantitySum", "predictTestRF1")],20)
 
 # R-square for Random Forest
-RfTrainSSE = sum((dataTrain$quantitySum - dataTrain$predictRF1)^2)
-RfTrainSST = sum((TrainPredicted$quantitySum - mean(TrainPredicted$quantitySum))^2)
-R-Square <- (1 - RfTrainSSE/RfTrainSST)
+RfTrainSSE = sum((TrainPredictedRF1$quantitySum - TrainPredictedRF1$predictTrainRF1)^2)
+RfTrainSST = sum((TrainPredictedRF1$quantitySum - mean(TrainPredictedRF1$quantitySum))^2)
+RSquareRF <- (1 - RfTrainSSE/RfTrainSST)
+RSquareRF
 
-# Tuning Random Forest and with cross validation - Generally this is computationally intensive
+# R-square for Random Forest
+RfTestSSE = sum((TestPredictedRF1$quantitySum - TestPredictedRF1$predictTestRF1)^2)
+RfTestSST = sum((TestPredictedRF1$quantitySum - mean(TestPredictedRF1$quantitySum))^2)
+RSquareRFTest <- (1 - RfTestSSE/RfTestSST)
+RSquareRFTest
+
+# Tuning Random Forest and with cross validation - Generally this is computationally intensive (but depends on data point and other parameters)
 # Seeding
-set.seed(2)
+set.seed(1729)
 # install.packages("caret")
 # install.packages("e1071")
 library(caret)
 library(e1071)
+
+# Variable importance in the model:
+varImpPlot(RF1)
+
+## Tuning Random Forest model:
+## Using "e1071" package: RF with cross validation (tune.randomForest from package "e1071")
+library(e1071)
+set.seed(1729)
+tunedRF2 <- tune.randomForest(quantitySum ~ .-Date, data=dataTrain, ntree=seq(200,1000,100), nodesize=seq(1,20,1))
+summary(RF2)
+# best parameters:
+# nodesize ntree
+#       12   300
+
+## Tuning random forest model using "caret" package: Grid Search for optimal parameter
+set.seed(1234)
+library(caret)
+library(e1071)
+# define cross validation: 
+fitControl = trainControl(method='cv', number=10)
+
+# Can try the below one as well (can also try to tune the parameters which we can see from output of trainControl before training the model)
+# fitControl = trainControl(method='repeatedcv', number=10, repeats=5, classProbs = TRUE, preProcess = "pca", )
+
+rfGrid = expand.grid(.mtry = c(1:10))
+
+# Perform the cross validation 
+begin = Sys.time()
+tuningRF <- train(quantitySum ~ .-Date, data=dataTrain, method = "rf", trControl = fitControl, tuneGrid = rfGrid )
+finish = Sys.time()
+finish - begin
+
+
+# Plot:
+# Residuals for Test data:
+denRFTest1 <- density(TestPredictedRF1$quantitySum - TestPredictedRF1$predictTestRF1)
+plot(denRFTest1, main = "Density plot for residuals/errors")
+polygon(denRFTest1, col="green", border="red")
 
 # ======================================================
 # Gradient Boosting:
@@ -399,7 +449,27 @@ plot.gbm(gbm1 , i.var=8, bestGBMperf1)
 plot.gbm(gbm1 , i.var=9, bestGBMperf1)
 plot.gbm(gbm1 , i.var=10, bestGBMperf1)
 
-predictTest1 <- predict(gbm1, dataTest, n.trees = bestGBMperf1)
+salesPredictedGBMTrain <- predict(gbm1, dataTrain, n.trees = bestGBMperf1, type="response")
+salesPredictedGBMTest <- predict(gbm1, dataTest, n.trees = bestGBMperf1, type="response")
 
-summary(predictTest1)
+summary(salesPredictedGBMTrain)
+summary(salesPredictedGBMTest)
 
+TrainPredicted <- cbind(dataTrain, salesPredictedGBMTrain)
+TestPredicted <- cbind(dataTest, salesPredictedGBMTest)
+#head(TrainPredicted[,c("quantitySum", "salesPredictedGBMTrain")],20)
+#head(TestPredicted[,c("quantitySum", "salesPredictedGBMTest")],20)
+
+# R-square for GBM
+gbmTrainSSE = sum((TrainPredicted$quantitySum - TrainPredicted$salesPredictedGBMTrain)^2)
+gbmTrainSST = sum((TrainPredicted$quantitySum - mean(TrainPredicted$quantitySum))^2)
+RSquareTrain <- (1 - gbmTrainSSE/gbmTrainSST)
+RSquareTrain
+
+gbmTestSSE = sum((TestPredicted$quantitySum - TestPredicted$salesPredictedGBMTest)^2)
+gbmTestSST = sum((TestPredicted$quantitySum - mean(TestPredicted$quantitySum))^2)
+RSquareTestGBM1 <- (1 - gbmTestSSE/gbmTestSST)
+RSquareTestGBM1
+
+# Result plots:
+plot(quantitySum ~ salesPredictedGBMTest, data=TestPredicted, main="Actual vs Predicted: GBM Model")
