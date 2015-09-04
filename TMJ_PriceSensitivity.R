@@ -1,12 +1,12 @@
 # Created Date: 7th May 2015
-# Modified: 17th August 2015
+# Modified: 31st August 2015
 # Author: Raja (mail.nvraja@gmail.com)
 # ==========================================
 paths = list(Data='/home/raja/Documents/Projects/TMJ/Data_20150504/Data/')
 
 # The combined raw data: Set working directory where the files to be read are...
 setwd(paths$Data)
-rawDataList <- lapply(2008:2014, function(x) unique(read.csv(paste0("Q",x,x+1,".csv"), header = TRUE, sep=",")))
+rawDataList <- lapply(2008:2015, function(x) unique(read.csv(paste0("Q",x,x+1,".csv"), header = TRUE, sep=",")))
 rawData <- do.call(rbind, rawDataList)
 # structure of the data
 str(rawData)
@@ -15,7 +15,7 @@ str(rawData)
 rawData$Date <- as.Date(strptime(rawData$DocDate, "%B %d %Y 12:00AM"))
 
 # Dummy table with all the dates:
-seqDate <- list(Date=seq(as.Date("2008-08-20"),as.Date("2015-03-31"), by=1))
+seqDate <- list(Date=seq(as.Date("2008-08-20"),as.Date("2015-08-31"), by=1))
 seqDate <- as.data.frame(seqDate)
 
 # New dataframe: All dates included and with "NA" as value when not available
@@ -42,6 +42,7 @@ nrow(rawData[rawData$FINYEAR=="[Q20112012]",])
 nrow(rawData[rawData$FINYEAR=="[Q20122013]",])
 nrow(rawData[rawData$FINYEAR=="[Q20132014]",])
 nrow(rawData[rawData$FINYEAR=="[Q20142015]",])
+nrow(rawData[rawData$FINYEAR=="[Q20152016]",])
 
 # Store wise distribution:
 tapply(rawData$Date ,rawData$Project, summary)
@@ -127,21 +128,21 @@ quantile(unitPrice[unitPrice$MType=="SILVER", "BoardRate"], prob= seq(0,1, lengt
 unitPrice[unitPrice$BoardRate>4000, c("Date", "BoardRate")]
 
 # Imputing for 2015-10-21(outlier) with mean:
-unitPrice[unitPrice$Date=="2011-10-21" & unitPrice$MType=="GOLD", "BoardRate"] <- "2490.625"
+#unitPrice[unitPrice$Date=="2011-10-21" & unitPrice$MType=="GOLD", "BoardRate"] <- "2490.625"
 
 # Filtering Gold:
 unitPriceGold <- unitPrice[unitPrice$MType=="GOLD", ]
 # Filtering out FY15
-unitPriceGold <- unitPriceGold[unitPriceGold$Date<"2015-04-01", ]
+unitPriceGold <- unitPriceGold[unitPriceGold$Date<"2015-09-01", ]
 
 # Plotting the gold unit price:
 library(ggplot2)
 unitPriceGold$BoardRate <- as.numeric(unitPriceGold$BoardRate)
-ggplot(unitPriceGold[unitPriceGold$Date>"2009-01-01" & unitPriceGold$Date<"2015-01-01",], aes(Date, BoardRate)) + geom_line()
+unitPriceVariation <- ggplot(unitPriceGold[unitPriceGold$Date>"2009-01-01" & unitPriceGold$Date<"2015-08-31",], aes(Date, BoardRate)) + geom_line()
 
 # Unit price for all days:
 # Dummy table with all the dates:
-seqDatePrice <- list(Date=seq(as.Date("2009-11-21"), as.Date("2015-03-31"), by=1))
+seqDatePrice <- list(Date=seq(as.Date("2009-11-21"), as.Date("2015-08-31"), by=1))
 seqDatePrice <- as.data.frame(seqDatePrice)
 # summary(seqDatePrice$Date)
 
@@ -252,7 +253,7 @@ ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2011-01-01" & GData
 ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2012-01-01" & GData.MDU.Complete.Date$Date<"2013-01-01",], aes(Date, quantitySum)) + geom_line()
 ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2013-01-01" & GData.MDU.Complete.Date$Date<"2014-01-01",], aes(Date, quantitySum)) + geom_line()
 ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2014-01-01" & GData.MDU.Complete.Date$Date<"2015-01-01",], aes(Date, quantitySum)) + geom_line()
-
+ggplot(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2015-01-01" & GData.MDU.Complete.Date$Date<"2015-08-31",], aes(Date, quantitySum)) + geom_line()
 
 GData.MDU.Complete.Date <- as.data.frame(GData.MDU.Complete.Date)
 
@@ -263,6 +264,8 @@ GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2011-01-01" & GData.MDU.Co
 GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2012-01-01" & GData.MDU.Complete.Date$Date<"2013-01-01" & GData.MDU.Complete.Date$quantitySum>6000, ]
 GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2013-01-01" & GData.MDU.Complete.Date$Date<"2014-01-01" & GData.MDU.Complete.Date$quantitySum>5000, ]
 GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2014-01-01" & GData.MDU.Complete.Date$Date<"2015-01-01" & GData.MDU.Complete.Date$quantitySum>5000, ]
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2015-01-01" & GData.MDU.Complete.Date$Date<"2015-08-31" & GData.MDU.Complete.Date$quantitySum>5000, ]
+GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2015-07-01" & GData.MDU.Complete.Date$Date<"2015-08-31" & GData.MDU.Complete.Date$quantitySum>5000, ]
 
 # Distribution of quantity sold per day:
 quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2009-01-01" & GData.MDU.Complete.Date$Date<"2010-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
@@ -271,12 +274,13 @@ quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2011-01-01" & GDa
 quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2012-01-01" & GData.MDU.Complete.Date$Date<"2013-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
 quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2013-01-01" & GData.MDU.Complete.Date$Date<"2014-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
 quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2014-01-01" & GData.MDU.Complete.Date$Date<"2015-01-01", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
-
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2015-01-01" & GData.MDU.Complete.Date$Date<"2015-08-31", "quantitySum"], prob=seq(0.95,1,length=11), type=5)
+quantile(GData.MDU.Complete.Date[GData.MDU.Complete.Date$Date>"2015-07-01" & GData.MDU.Complete.Date$Date<"2015-08-31", "quantitySum"], prob=seq(0,1,length=11), type=5)
 
 GData.MDU.Complete.Date[GData.MDU.Complete.Date$quantitySum>6000, ]
 
 # Outlier Sales: Dates
-outlierSalesDates <- c("2009-04-27", "2009-08-03", "2010-05-16", "2010-07-31", "2010-08-01", "2010-08-03", "2011-05-06", "2011-08-03", "2012-04-24", "2012-08-02", "2013-04-17", "2013-04-19", "2013-04-20", "2013-04-21", "2013-04-22", "2013-05-13", "2013-08-03", "2014-05-02", "2014-08-03")
+outlierSalesDates <- c("2009-04-27", "2009-08-03", "2010-05-16", "2010-07-31", "2010-08-01", "2010-08-03", "2011-05-06", "2011-08-03", "2012-04-24", "2012-08-02", "2013-04-17", "2013-04-19", "2013-04-20", "2013-04-21", "2013-04-22", "2013-05-13", "2013-08-03", "2014-05-02", "2014-08-03", "2015-04-21")
 
 DailySalesUnitPriceIncreaseDecrease$Date <- as.character(DailySalesUnitPriceIncreaseDecrease$Date)
 
@@ -285,7 +289,12 @@ DailySalesUnitPriceIncreaseDecreaseLessOutlier <- DailySalesUnitPriceIncreaseDec
 DailySalesUnitPriceIncreaseDecreaseLessOutlier$Date <- as.Date(DailySalesUnitPriceIncreaseDecreaseLessOutlier$Date)
 
 dataFinalizing <- DailySalesUnitPriceIncreaseDecreaseLessOutlier[,]
-ggplot(dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2011-01-01",], aes(Date, quantitySum)) + geom_line()
+SalesVariation1 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-08-31",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (since 2014))")
+SalesVariation2 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-06-30",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (January 2014 - June 2015))")
+SalesVariation3 <- ggplot(dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2015-08-31",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (since 2010)")
+SalesVariation4 <- ggplot(dataFinalizing[dataFinalizing$Date>"2015-01-01" & dataFinalizing$Date<"2015-08-31",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (2015: January - August)")
+SalesVariation5 <- ggplot(dataFinalizing[dataFinalizing$Date>"2015-01-01" & dataFinalizing$Date<"2015-06-30",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (2015: January - June)")
+
 # ======================================================
 # previous days sales:
 dataFinalizing$PreviousDaySales <- lag(dataFinalizing$quantitySum)
@@ -325,9 +334,16 @@ ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"20
 
 ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"2015-01-01",], aes(Date, goldUnitPrice)) + geom_line()
 
+# 2-D plot of gold unit price and sales:
+BoardrateSales1 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-08-30",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2014 - August 2015)") + geom_smooth(method = "lm", se=FALSE, color="blue", aes(group=1))
+
+BoardrateSales2 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-06-30",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2014 - June 2015)") + geom_smooth(method = "lm", se=FALSE, color="red", aes(group=1))
+
+BoardrateSales3 <- ggplot(dataFinalizing[dataFinalizing$Date>"2013-01-01" & dataFinalizing$Date<"2015-06-30",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2013 - June 2015)") + geom_smooth(method = "lm", se=FALSE, color="red", aes(group=1))
+
 # ======================================================
 # Copy of data for modelling:
-dataTestTrain <- dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2014-04-01",]
+dataTestTrain <- dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2015-06-30",]
 names(dataTestTrain)
 
 # This is because 53 factors are the max that could be easily handled
@@ -376,6 +392,28 @@ RfTestSST = sum((TestPredictedRF1$quantitySum - mean(TestPredictedRF1$quantitySu
 RSquareRFTest <- (1 - RfTestSSE/RfTestSST)
 RSquareRFTest
 
+# Variable importance in the model:
+varImpPlot(RF1)
+
+# Others:
+#varUsed(RF1)
+#treesize(RF1)
+
+plotDataRFTest1 <- TestPredictedRF1[,c("Date", "quantitySum", "predictTestRF1")]
+names(plotDataRFTest1)[2] <- "ActualSales"
+names(plotDataRFTest1)[3] <- "PredictedSales"
+
+# Result plots:
+library(ggplot2)
+RFPlot1 <- ggplot(plotDataRFTest1, aes(Date)) + 
+  geom_line(aes(y=ActualSales, colour="ActualSales")) +
+  geom_line(aes(y=PredictedSales, colour="PredictedSales")) +
+  ggtitle("Sales: Actual vs Predicted (for test data)") +
+  scale_colour_manual("", 
+                      breaks = c("ActualSales", "PredictedSales"),
+                      values = c("ActualSales"="green", "PredictedSales"="blue"))
+ 
+# ======================================================
 # Tuning Random Forest and with cross validation - Generally this is computationally intensive (but depends on data point and other parameters)
 # Seeding
 set.seed(1729)
@@ -384,8 +422,6 @@ set.seed(1729)
 library(caret)
 library(e1071)
 
-# Variable importance in the model:
-varImpPlot(RF1)
 
 ## Tuning Random Forest model:
 ## Using "e1071" package: RF with cross validation (tune.randomForest from package "e1071")
@@ -409,18 +445,19 @@ fitControl = trainControl(method='cv', number=10)
 
 rfGrid = expand.grid(.mtry = c(1:10))
 
-# Perform the cross validation 
+# Tuning RF
 begin = Sys.time()
 tuningRF <- train(quantitySum ~ .-Date, data=dataTrain, method = "rf", trControl = fitControl, tuneGrid = rfGrid )
 finish = Sys.time()
 finish - begin
-
 
 # Plot:
 # Residuals for Test data:
 denRFTest1 <- density(TestPredictedRF1$quantitySum - TestPredictedRF1$predictTestRF1)
 plot(denRFTest1, main = "Density plot for residuals/errors")
 polygon(denRFTest1, col="green", border="red")
+
+# Line plot Actual vs Predicted over time:
 
 # ======================================================
 # Gradient Boosting:
@@ -431,7 +468,7 @@ gbm1 <- gbm(quantitySum ~ .-Date, data=dataTrain,
 		interaction.depth = 1,
 		bag.fraction = 0.5,
 		shrinkage = 0.01,
-		n.cores = 4	
+		n.cores = 4
 		)
 
 summary(gbm1)
@@ -472,4 +509,110 @@ RSquareTestGBM1 <- (1 - gbmTestSSE/gbmTestSST)
 RSquareTestGBM1
 
 # Result plots:
-plot(quantitySum ~ salesPredictedGBMTest, data=TestPredicted, main="Actual vs Predicted: GBM Model")
+library(ggplot2)
+ggplot(TestPredicted, aes(Date)) + 
+  geom_line(aes(y=quantitySum, colour="quantitySum")) +
+  geom_line(aes(y=salesPredictedGBMTest, colour="salesPredictedGBMTest"))
+
+#plot(quantitySum ~ salesPredictedGBMTest, data=TestPredicted, main="Actual vs Predicted: GBM Model")
+
+# ======================================================
+# ======================================================
+# Copy of data for modelling:
+dataTestTrain <- dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2015-08-31",]
+names(dataTestTrain)
+
+# This is because 53 factors are the max that could be easily handled
+dataTestTrain <- dataTestTrain[dataTestTrain$weekNumber!="53",]
+
+# Converting "character" class to "factor" class
+i <- sapply(dataTestTrain, is.character)
+dataTestTrain[i] <- lapply(dataTestTrain[i], as.factor) 
+
+# ======================================================
+# OOT validation:
+library(caTools)
+set.seed(1729)
+#split = sample.split(dataTestTrain$quantitySum, SplitRatio = 0.8)
+
+dataTrain = dataTestTrain[dataTestTrain$Date>="2013-01-01" & dataTestTrain$Date<"2014-03-15", ]
+dataTest = dataTestTrain[dataTestTrain$Date>="2014-03-15" & dataTestTrain$Date<"2014-03-31", ]
+
+# ======================================================
+# The random forest model
+#install.packages("randomForest")
+library(randomForest)
+RF1 <- randomForest(quantitySum ~ .-Date, data=dataTrain, ntree=2000, nodesize=25, do.trace=FALSE)
+
+predictTrainRF1  <- predict(RF1, data=dataTrain)
+predictTestRF1  <- predict(RF1, newdata=dataTest)
+
+TrainPredictedRF1 <- cbind(dataTrain, predictTrainRF1)
+TestPredictedRF1 <- cbind(dataTest, predictTestRF1)
+
+head(TrainPredictedRF1[,c("Date", "quantitySum", "predictTrainRF1")],20)
+head(TestPredictedRF1[,c("Date", "quantitySum", "predictTestRF1")],20)
+
+# R-square for Random Forest
+RfTrainSSE = sum((TrainPredictedRF1$quantitySum - TrainPredictedRF1$predictTrainRF1)^2)
+RfTrainSST = sum((TrainPredictedRF1$quantitySum - mean(TrainPredictedRF1$quantitySum))^2)
+RSquareRF <- (1 - RfTrainSSE/RfTrainSST)
+RSquareRF
+
+# R-square for Random Forest
+RfTestSSE = sum((TestPredictedRF1$quantitySum - TestPredictedRF1$predictTestRF1)^2)
+RfTestSST = sum((TestPredictedRF1$quantitySum - mean(TestPredictedRF1$quantitySum))^2)
+RSquareRFTest <- (1 - RfTestSSE/RfTestSST)
+RSquareRFTest
+
+# Data:
+plotDataRFTest1 <- TestPredictedRF1[,c("Date", "quantitySum", "predictTestRF1")]
+names(plotDataRFTest1)[2] <- "ActualSales"
+names(plotDataRFTest1)[3] <- "PredictedSales"
+
+#Plots:
+varImpPlot(RF1)
+
+library(ggplot2)
+RFPlotOOT <- ggplot(plotDataRFTest1, aes(Date)) + 
+  geom_line(aes(y=ActualSales, colour="ActualSales")) +
+  geom_line(aes(y=PredictedSales, colour="PredictedSales")) +
+  ggtitle("Sales: Actual vs Predicted (for out of time validation data)") +
+  scale_colour_manual("", 
+                      breaks = c("ActualSales", "PredictedSales"),
+                      values = c("ActualSales"="green", "PredictedSales"="blue"))
+
+# ======================================================
+# Plot
+# Board Rate vs Sales:
+dataPlot <- dataFinalizing[dataFinalizing$Date>"2013-01-01" & dataFinalizing$Date<"2015-06-30",]
+## add extra space to right margin of plot within frame
+par(mar=c(5, 4, 4, 6) + 0.1)
+
+#dataFinalizing$Date <- as.Date(dataFinalizing$Date)
+## Plot first set of data and draw its axis
+plot(dataPlot$Date, dataPlot$goldUnitPrice, pch=16, axes=FALSE, ylim=c(0,3100), xlab="", ylab="", 
+   type="b",col="black", main="Unit Price Vs Sales")
+axis(2, ylim=c(0,3100),col="black",las=1)  ## las=1 makes horizontal labels
+mtext("Gold Unit Price",side=2,line=2.5)
+box()
+
+## Allow a second plot on the same graph
+par(new=TRUE)
+
+## Plot the second plot and put axis scale on right
+plot(dataPlot$Date, dataPlot$quantitySum, pch=15,  xlab="", ylab="", ylim=c(0,6000), 
+    axes=FALSE, type="b", col="red")
+## a little farther out (line=4) to make room for labels
+mtext("Sales",side=4,col="red",line=4) 
+axis(4, ylim=c(0,6000), col="red",col.axis="red",las=1)
+
+## Draw the Date axis
+#axis(1,pretty(range(dataPlot$Date),10))
+#mtext("Date",side=1,col="black",line=2.5)
+axis.Date(side=1, dataPlot$Date, format="%d/%m/%Y")
+
+## Add Legend
+legend("topleft",legend=c("Unit Price","Gold Sales"),
+  text.col=c("black","red"),pch=c(16,15),col=c("black","red"))
+
