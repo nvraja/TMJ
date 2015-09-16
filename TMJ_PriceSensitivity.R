@@ -1,6 +1,6 @@
 # Created Date: 7th May 2015
 # Modified: 14th September 2015
-# Author: Raja et. al (Churn Data)
+# Author: Raja et al. (Churn Data)
 # ==========================================
 paths = list(Data='/home/raja/Documents/Projects/TMJ/Data_20150504/Data/')
 
@@ -13,6 +13,8 @@ str(rawData)
 
 # The date-time variable to right format: 
 rawData$Date <- as.Date(strptime(rawData$DocDate, "%B %d %Y 12:00AM"))
+
+summary(rawData$Date)
 
 # Dummy table with all the dates:
 seqDate <- list(Date=seq(as.Date("2008-08-20"),as.Date("2015-08-31"), by=1))
@@ -300,10 +302,10 @@ DailySalesUnitPriceIncreaseDecreaseLessOutlier$Date <- as.Date(DailySalesUnitPri
 
 dataFinalizing <- DailySalesUnitPriceIncreaseDecreaseLessOutlier[,]
 SalesVariation1 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-08-31",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (since 2014))")
-SalesVariation2 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-06-30",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (January 2014 - June 2015))")
-SalesVariation3 <- ggplot(dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2015-08-31",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (since 2010)")
-SalesVariation4 <- ggplot(dataFinalizing[dataFinalizing$Date>"2015-01-01" & dataFinalizing$Date<"2015-08-31",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (2015: January - August)")
-SalesVariation5 <- ggplot(dataFinalizing[dataFinalizing$Date>"2015-01-01" & dataFinalizing$Date<"2015-06-30",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (2015: January - June)")
+SalesVariation2 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-07-01",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (January 2014 - June 2015))")
+SalesVariation3 <- ggplot(dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2015-08-01",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (since 2010)")
+SalesVariation4 <- ggplot(dataFinalizing[dataFinalizing$Date>"2015-01-01" & dataFinalizing$Date<"2015-09-01",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (2015: January - August)")
+SalesVariation5 <- ggplot(dataFinalizing[dataFinalizing$Date>"2015-01-01" & dataFinalizing$Date<"2015-07-01",], aes(Date, quantitySum)) + geom_line() + xlab("Date") + ylab("Gold Sales (in grams)") + ggtitle("Sales w.r.t time (2015: January - June)")
 
 # ======================================================
 # previous days sales:
@@ -357,13 +359,13 @@ ggplot(dataFinalizing[dataFinalizing$Date>"2009-01-01" & dataFinalizing$Date<"20
 # 2-D plot of gold unit price and sales:
 BoardrateSales1 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-08-30",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2014 - August 2015)") + geom_smooth(method = "lm", se=FALSE, color="blue", aes(group=1))
 
-BoardrateSales2 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-06-30",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2014 - June 2015)") + geom_smooth(method = "lm", se=FALSE, color="red", aes(group=1))
+BoardrateSales2 <- ggplot(dataFinalizing[dataFinalizing$Date>"2014-01-01" & dataFinalizing$Date<"2015-07-01",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2014 - June 2015)") + geom_smooth(method = "lm", se=FALSE, color="red", aes(group=1))
 
-BoardrateSales3 <- ggplot(dataFinalizing[dataFinalizing$Date>"2013-01-01" & dataFinalizing$Date<"2015-06-30",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2013 - June 2015)") + geom_smooth(method = "lm", se=FALSE, color="red", aes(group=1))
+BoardrateSales3 <- ggplot(dataFinalizing[dataFinalizing$Date>"2013-01-01" & dataFinalizing$Date<"2015-07-01",], aes(goldUnitPrice, quantitySum)) + geom_line()  + xlab("Gold Board Rate") + ylab("Gold Sales (in grams)") + ggtitle("Board rate Vs Sales (January 2013 - June 2015)") + geom_smooth(method = "lm", se=FALSE, color="red", aes(group=1))
 
 # ======================================================
 # Copy of data for modelling:
-dataTestTrain <- dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2015-06-30",]
+dataTestTrain <- dataFinalizing[dataFinalizing$Date>"2010-01-01" & dataFinalizing$Date<"2015-07-01",]
 names(dataTestTrain)
 
 # This is because 53 factors are the max that could be easily handled
@@ -555,8 +557,8 @@ library(caTools)
 set.seed(1729)
 #split = sample.split(dataTestTrain$quantitySum, SplitRatio = 0.8)
 
-dataTrain = dataTestTrain[dataTestTrain$Date>="2013-01-01" & dataTestTrain$Date<"2014-03-15", ]
-dataTest = dataTestTrain[dataTestTrain$Date>="2014-03-15" & dataTestTrain$Date<"2014-03-31", ]
+dataTrain = dataTestTrain[dataTestTrain$Date>="2013-01-01" & dataTestTrain$Date<"2015-08-01", ]
+dataTest = dataTestTrain[dataTestTrain$Date>="2015-08-01" & dataTestTrain$Date<"2015-08-15", ]
 
 # ======================================================
 # The random forest model
@@ -603,8 +605,8 @@ RFPlotOOT <- ggplot(plotDataRFTest1, aes(Date)) +
                       values = c("ActualSales"="green", "PredictedSales"="blue"))
 
 # ======================================================
-# Plot
-# Board Rate vs Sales:
+# Plot: Board Rate, Sales over date
+# Board Rate vs Sales: 
 dataPlot <- dataFinalizing[dataFinalizing$Date>"2013-01-01" & dataFinalizing$Date<"2015-06-30",]
 ## add extra space to right margin of plot within frame
 par(mar=c(5, 4, 4, 6) + 0.1)
