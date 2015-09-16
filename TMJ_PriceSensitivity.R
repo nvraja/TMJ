@@ -1,6 +1,6 @@
 # Created Date: 7th May 2015
-# Modified: 31st August 2015
-# Author: Raja (mail.nvraja@gmail.com)
+# Modified: 14th September 2015
+# Author: Raja et. al (Churn Data)
 # ==========================================
 paths = list(Data='/home/raja/Documents/Projects/TMJ/Data_20150504/Data/')
 
@@ -235,8 +235,18 @@ head(DailySalesUnitPriceIncreaseDecrease,50)
 # Change in unit price w.r.t to last:
 # one day
 DailySalesUnitPriceIncreaseDecrease$priceChange1D <- c(0, diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 1))
+# 2 days
+DailySalesUnitPriceIncreaseDecrease$priceChange2D <- c(rep(0,2), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 2))
+# 3 days
+DailySalesUnitPriceIncreaseDecrease$priceChange3D <- c(rep(0,3), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 3))
+# 4 days
+DailySalesUnitPriceIncreaseDecrease$priceChange4D <- c(rep(0,4), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 4))
+# 5 days
+DailySalesUnitPriceIncreaseDecrease$priceChange5D <- c(rep(0,5), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 5))
+# 6 days
+DailySalesUnitPriceIncreaseDecrease$priceChange6D <- c(rep(0,6), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 6))
 # 7 days
-DailySalesUnitPriceIncreaseDecrease$priceChange7D <- c(rep(0,2), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 2))
+DailySalesUnitPriceIncreaseDecrease$priceChange7D <- c(rep(0,7), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 7))
 # 14 days
 DailySalesUnitPriceIncreaseDecrease$priceChange14D <- c(rep(0,14), diff(DailySalesUnitPriceIncreaseDecrease$goldUnitPrice, 14))
 # 30 days
@@ -303,6 +313,16 @@ dataFinalizing$PreviousDaySales[1] <- 0
 # To obtain moving/rolling average from rollmean function in "zoo" package :
 library(zoo)
 #Average Sales in the last:
+# 2 days:
+dataFinalizing$AvgSalesPast2 <- c(rep(NA, 1), rollmean(dataFinalizing$PreviousDaySales,2, align="right"))
+# 3 days:
+dataFinalizing$AvgSalesPast3 <- c(rep(NA, 2), rollmean(dataFinalizing$PreviousDaySales,3, align="right"))
+# 4 days:
+dataFinalizing$AvgSalesPast4 <- c(rep(NA, 3), rollmean(dataFinalizing$PreviousDaySales,4, align="right"))
+# 5 days:
+dataFinalizing$AvgSalesPast5 <- c(rep(NA, 4), rollmean(dataFinalizing$PreviousDaySales,5, align="right"))
+# 6 days:
+dataFinalizing$AvgSalesPast6 <- c(rep(NA, 5), rollmean(dataFinalizing$PreviousDaySales,6, align="right"))
 # 7 days:
 dataFinalizing$AvgSalesPast7 <- c(rep(NA, 6), rollmean(dataFinalizing$PreviousDaySales,7, align="right"))
 # 14 days:
